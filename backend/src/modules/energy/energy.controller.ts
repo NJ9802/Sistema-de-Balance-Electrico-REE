@@ -1,12 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
-import { EnergyService } from './energy.service';
+import { EnergyService } from 'modules/energy/energy.service';
 
 @Controller('energy')
 export class EnergyController {
   constructor(private readonly energyService: EnergyService) {}
 
-  @Get()
-  findAll() {
-    return this.energyService.findAll();
+  @Get('')
+  getEnergyData() {
+    return this.energyService.findAllRecords();
   }
 }

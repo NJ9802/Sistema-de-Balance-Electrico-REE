@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { TYPE_ORM_CONFIG } from './config/type-orm.config';
-import { EnergyModule } from './modules/energy/energy.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { TYPE_ORM_CONFIG } from 'config/type-orm.config';
+import { EnergyModule } from 'modules/energy/energy.module';
 import { join } from 'path';
 
 @Module({
@@ -20,7 +18,5 @@ import { join } from 'path';
     }),
     EnergyModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
