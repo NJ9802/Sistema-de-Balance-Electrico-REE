@@ -6,11 +6,6 @@ import { GetEnergyFilterDto } from './dtos/get-energy-filter.dto';
 export class EnergyController {
   constructor(private readonly energyService: EnergyService) {}
 
-  @Get('')
-  getEnergyData() {
-    return this.energyService.findAllRecords();
-  }
-
   @Get('balance')
   getBalance(@Query() getEnergyFilterDto: GetEnergyFilterDto) {
     return this.energyService.getFilteredBalance(

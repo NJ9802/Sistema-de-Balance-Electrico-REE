@@ -12,6 +12,7 @@ import { EnergyCategory, EnergyRecord } from 'modules/energy/entities';
 import { REEResponse } from 'modules/energy/interfaces';
 import { firstValueFrom } from 'rxjs';
 import { Between, Repository } from 'typeorm';
+import { CATEGORY_GROUPS } from './constants/category-groups';
 
 @Injectable()
 export class EnergyService {
@@ -27,18 +28,75 @@ export class EnergyService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async handleCron() {
-    this.logger.log('Iniciando ingesta de datos REE...');
+    this.logger.log('Iniciando ingesta automática de datos REE...');
 
-    const today = new Date().toISOString().split('T')[0];
+    const todayStr = new Date().toISOString().split('T')[0];
+    let startDateStr = todayStr;
+    const endDateStr = todayStr;
+
     try {
-      await this.fetchAndStore(`${today}T00:00`, `${today}T23:59`);
+      const lastRecord = await this.recordRepo
+        .find({
+          order: { datetime: 'DESC' },
+          take: 1,
+        })
+        .then((records) => records[0]);
+
+      if (lastRecord) {
+        const nextDayToFetch = new Date(lastRecord.datetime);
+        nextDayToFetch.setDate(nextDayToFetch.getDate() + 1);
+        const nextDayStr = nextDayToFetch.toISOString().split('T')[0];
+
+        if (nextDayStr < endDateStr) {
+          this.logger.warn(
+            `Detectados días faltantes en DB. Recuperando datos desde ${nextDayStr} hasta ${endDateStr}...`,
+          );
+          startDateStr = nextDayStr;
+        }
+      }
     } catch (error) {
-      this.logger.error('Fallo en la ejecución del Cron Job de ingesta', error);
+      this.logger.error('Error al verificar el último registro en DB', error);
+    }
+
+    const MAX_RETRIES = 3;
+    let attempt = 0;
+    let success = false;
+
+    while (attempt < MAX_RETRIES && !success) {
+      try {
+        attempt++;
+        this.logger.log(
+          `Intento ${attempt}/${MAX_RETRIES} para el periodo ${startDateStr} al ${endDateStr}...`,
+        );
+
+        await this.fetchAndStore(
+          `${startDateStr}T00:00`,
+          `${endDateStr}T23:59`,
+        );
+
+        success = true;
+        this.logger.log('Ingesta automática completada con éxito.');
+      } catch (error) {
+        this.logger.error(
+          `Fallo en el intento ${attempt}`,
+          error instanceof Error ? error.message : error,
+        );
+
+        if (attempt < MAX_RETRIES) {
+          this.logger.log('Esperando 10 segundos antes de reintentar...');
+
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        } else {
+          this.logger.error(
+            `Máximo de reintentos alcanzado. El sistema intentará recuperar estos datos mañana.`,
+          );
+        }
+      }
     }
   }
 
   async fetchAndStore(startDate: string, endDate: string) {
-    const url = `https://apidatos.ree.es/es/datos/balance/balance-electrico?start_date=${startDate}&end_date=${endDate}&time_trunc=day`;
+    const url = `https://apidatos.ree.es/es/datos/balance/balance-electrico?start_date=${startDate}T00&end_date=${endDate}&time_trunc=day`;
     let responseData: REEResponse;
 
     try {
@@ -104,20 +162,34 @@ export class EnergyService {
     }
   }
 
-  findAllRecords() {
-    return this.recordRepo.find({
-      relations: { category: true },
-      order: { datetime: 'ASC' },
-    });
-  }
-
-  getFilteredBalance(startDate: string, endDate: string) {
+  async getFilteredBalance(startDate: string, endDate: string) {
     try {
-      return this.recordRepo.find({
+      const categories = await this.categoryRepo.find();
+      const records = await this.recordRepo.find({
         where: { datetime: Between(new Date(startDate), new Date(endDate)) },
         order: { datetime: 'ASC' },
         relations: { category: true },
       });
+
+      const filteredCategories = categories.filter(
+        (category) => !CATEGORY_GROUPS.includes(category.id),
+      );
+      const filteredRecords = records.filter(
+        (record) => !CATEGORY_GROUPS.includes(record.category.id),
+      );
+
+      const groups = records.filter((record) =>
+        CATEGORY_GROUPS.includes(record.category.id),
+      );
+
+      return {
+        data: {
+          categories: filteredCategories,
+          groups,
+          records: filteredRecords,
+        },
+        count: filteredRecords.length,
+      };
     } catch (error) {
       this.logger.error('Error al consultar el balance filtrado', error);
       throw new InternalServerErrorException(
