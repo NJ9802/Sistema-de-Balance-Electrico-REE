@@ -171,24 +171,17 @@ export class EnergyService {
         relations: { category: true },
       });
 
-      const filteredCategories = categories.filter(
-        (category) => !CATEGORY_GROUPS.includes(category.id),
-      );
-      const filteredRecords = records.filter(
-        (record) => !CATEGORY_GROUPS.includes(record.category.id),
-      );
-
       const groups = records.filter((record) =>
         CATEGORY_GROUPS.includes(record.category.id),
       );
 
       return {
         data: {
-          categories: filteredCategories,
+          categories,
           groups,
-          records: filteredRecords,
+          records,
         },
-        count: filteredRecords.length,
+        count: records.length,
       };
     } catch (error) {
       this.logger.error('Error al consultar el balance filtrado', error);
