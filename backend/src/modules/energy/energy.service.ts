@@ -85,7 +85,7 @@ export class EnergyService {
         if (attempt < MAX_RETRIES) {
           this.logger.log('Esperando 10 segundos antes de reintentar...');
 
-          await new Promise((resolve) => setTimeout(resolve, 5000));
+          await new Promise((resolve) => setTimeout(resolve, 10000));
         } else {
           this.logger.error(
             `Máximo de reintentos alcanzado. El sistema intentará recuperar estos datos mañana.`,
