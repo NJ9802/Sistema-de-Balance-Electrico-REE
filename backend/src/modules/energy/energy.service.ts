@@ -96,7 +96,7 @@ export class EnergyService {
   }
 
   async fetchAndStore(startDate: string, endDate: string) {
-    const url = `https://apidatos.ree.es/es/datos/balance/balance-electrico?start_date=${startDate}T00&end_date=${endDate}&time_trunc=day`;
+    const url = `https://apidatos.ree.es/es/datos/balance/balance-electrico?start_date=${startDate}&end_date=${endDate}&time_trunc=day`;
     let responseData: REEResponse;
 
     try {
