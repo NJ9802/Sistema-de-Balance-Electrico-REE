@@ -1,17 +1,36 @@
-import { Typography } from "@mui/material";
-import { useEnergyBalance } from "./modules/energy/hooks/useEnergyBalance";
+import { Box, Stack } from "@mui/material";
+import Header from "./components/Header";
+import { EnergyBalancePage } from "./modules/energy/pages/EnergyBalancePage";
+import SideMenu from "./components/SideMenu";
+import { Route, Routes } from "react-router";
+import { EnergyGroupsBalancePage } from "./modules/energy/pages/EnergyGroupsBalancePage";
 
 function App() {
-  const { data, isLoading, error } = useEnergyBalance(
-    "2026-01-01T00:00",
-    "2026-01-31T00:00",
-  );
-
-  console.log("Energy Balance Data:", { data, isLoading, error });
-
   return (
     <>
-      <Typography>Hello World</Typography>
+      <Header />
+      <Stack direction={"row"} sx={{ overflow: "hidden" }}>
+        <SideMenu />
+        <Box
+          sx={{
+            flexGrow: 1,
+            minHeight: "calc(100vh - 64px)",
+            padding: "20px 50px",
+          }}
+        >
+          <Routes>
+            <Route path="/" element={<EnergyBalancePage />} />
+            <Route
+              path="/balance-group"
+              element={<EnergyGroupsBalancePage />}
+            />
+            <Route
+              path="/consumption-data"
+              element={<div>Consumption Data</div>}
+            />
+          </Routes>
+        </Box>
+      </Stack>
     </>
   );
 }

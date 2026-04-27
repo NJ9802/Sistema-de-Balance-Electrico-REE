@@ -171,15 +171,37 @@ export class EnergyService {
         relations: { category: true },
       });
 
+      const groupCategories: EnergyCategory[] = [];
+      const filteredCategories: EnergyCategory[] = [];
+      const groupRecords: EnergyRecord[] = [];
+      const filteredRecords: EnergyRecord[] = [];
+
+      categories.forEach((category) => {
+        if (CATEGORY_GROUPS.includes(category.id)) {
+          groupCategories.push(category);
+        } else {
+          filteredCategories.push(category);
+        }
+      });
+
+      records.forEach((record) => {
+        if (CATEGORY_GROUPS.includes(record.category.id)) {
+          groupRecords.push(record);
+        } else {
+          filteredRecords.push(record);
+        }
+      });
+
       const groups = records.filter((record) =>
         CATEGORY_GROUPS.includes(record.category.id),
       );
 
       return {
         data: {
-          categories,
+          categories: filteredCategories,
           groups,
-          records,
+          groupCategories,
+          records: filteredRecords,
         },
         count: records.length,
       };

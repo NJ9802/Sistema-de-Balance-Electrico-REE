@@ -16,7 +16,8 @@ export interface EnergyRecord {
 export interface EnergyBalanceResponse {
   data: {
     categories: EnergyCategory[];
-    groups: EnergyCategory[];
+    groups: EnergyRecord[];
+    groupCategories: EnergyCategory[];
     records: EnergyRecord[];
   };
   count: number;
