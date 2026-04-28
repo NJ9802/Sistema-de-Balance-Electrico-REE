@@ -13,3 +13,17 @@ export const getEnergyBalance = async (
   });
   return data;
 };
+
+export const ingestData = async (
+  startDate: string,
+  endDate: string,
+): Promise<{ message: string }> => {
+  const { data } = await api.post<{ message: string }>(
+    "/api/energy/ingest-data",
+    {
+      startDate,
+      endDate,
+    },
+  );
+  return data;
+};

@@ -4,6 +4,7 @@ import { EnergyBalancePage } from "./modules/energy/pages/EnergyBalancePage";
 import SideMenu from "./components/SideMenu";
 import { Route, Routes } from "react-router";
 import { EnergyGroupsBalancePage } from "./modules/energy/pages/EnergyGroupsBalancePage";
+import { DataIngestPage } from "./modules/energy/pages/DataIngestPage";
 
 function App() {
   return (
@@ -24,10 +25,7 @@ function App() {
               path="/balance-group"
               element={<EnergyGroupsBalancePage />}
             />
-            <Route
-              path="/consumption-data"
-              element={<div>Consumption Data</div>}
-            />
+            <Route path="/data-ingestion" element={<DataIngestPage />} />
           </Routes>
         </Box>
       </Stack>
