@@ -109,4 +109,11 @@ npm run test
 
 ---
 
+## Capturas
+![Home](/Screenshots/Home.png)
+![Data Ingest](/Screenshots/Screenshot%202026-04-28%20183239.png)
+![Gif](/Screenshots/Recording%202026-04-28%20183341.gif)
+
+---
+
 Desarrollado como parte de una prueba técnica para Fullstack Developer.
