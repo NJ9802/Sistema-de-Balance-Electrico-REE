@@ -1,0 +1,37 @@
+# Build stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy configuration files
+COPY package*.json ./
+
+# Install dependencies including devDependencies for build
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Copy package files and install only production dependencies
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy built files from the builder stage
+COPY --from=builder /app/dist ./dist
+
+# Use a non-root user for security
+USER node
+
+EXPOSE 3000
+
+CMD ["node", "dist/main"]
